@@ -1,0 +1,36 @@
+{
+  "name": "most-common",
+  "version": "1.8.0",
+  "description": "MOST Web Framework Common Module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kbarbounakis/most-common.git"
+  },
+  "keywords": [
+    "most",
+    "most-web",
+    "most-data",
+    "common"
+  ],
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/kbarbounakis/most-common/issues"
+  },
+  "homepage": "https://github.com/kbarbounakis/most-common#readme",
+  "dependencies": {
+    "async": "^2.5.0",
+    "blueimp-md5": "^2.7.0",
+    "hashmap": "^2.3.0",
+    "lodash": "^4.17.4",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^3.5.1"
+  }
+}
