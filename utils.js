@@ -833,7 +833,6 @@ PathUtils.join = function (part) {
 };
 
 
-
 if (typeof exports !== 'undefined') {
     module.exports.ArgumentError = ArgumentError;
     module.exports.Args = Args;
