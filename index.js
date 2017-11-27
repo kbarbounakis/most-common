@@ -28,8 +28,6 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
-
 var _utils  = require('./utils');
 var _errors  = require('./errors');
 var _emitter  = require('./emitter');

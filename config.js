@@ -28,7 +28,6 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 var _ = require('lodash');
 var Symbol = require('symbol');
 var LangUtils = require("./utils").LangUtils;
@@ -42,11 +41,11 @@ var currentConfiguration = Symbol('current');
 var configPathProperty = Symbol('configurationPath');
 var executionPathProperty = Symbol('executionPath');
 var strategiesProperty = Symbol('strategies');
-var watchersProperty = Symbol('watchers');
+
 
 /**
  * @class Represents an application configuration
- * @param {string} configPath
+ * @param {string=} configPath
  * @property {*} settings
  * @constructor
  */
@@ -284,62 +283,12 @@ function DefaultModuleLoaderStrategy(config) {
 }
 LangUtils.inherits(DefaultModuleLoaderStrategy, ModuleLoaderStrategy);
 
-/**
- * @class
- * @constructor
- * @param {ConfigurationBase} config
- * @extends ModuleLoaderStrategy
- */
-function ActiveModuleLoaderStrategy(config) {
-    ActiveModuleLoaderStrategy.super_.bind(this)(config);
-    this[watchersProperty] = {};
-}
-LangUtils.inherits(ActiveModuleLoaderStrategy, ModuleLoaderStrategy);
-//noinspection JSUnusedGlobalSymbols
-/**
- * Returns the collection of active module watchers
- * @returns {*}
- */
-ActiveModuleLoaderStrategy.prototype.getWatchers = function() {
-    return this[watchersProperty];
-};
-
-/**
- * @param {string} modulePath
- * @returns {*}
- */
-ActiveModuleLoaderStrategy.prototype.require = function(modulePath) {
-    Args.notEmpty(modulePath,'Module Path');
-    if (!/^.\//i.test(modulePath)) {
-        //load module which is not starting with ./
-        return require(modulePath);
-    }
-    const finalModulePath = PathUtils.join(this.getConfiguration().getExecutionPath(),modulePath);
-    //try to load the given module
-    const resultModule = require(finalModulePath);
-    const resolvedModulePath = require.resolve(finalModulePath);
-    if (this[watchersProperty].hasOwnProperty(resolvedModulePath)) {
-        return resultModule;
-    }
-    //load fs module
-    const fsModule = 'fs', fs = require(fsModule);
-    //add file watcher
-    TraceUtils.debug('Registering active module watcher for module %s.', resolvedModulePath);
-    this[watchersProperty][resolvedModulePath] = fs.watch(resolvedModulePath, function(eventType, filename){
-            TraceUtils.debug('Update active module cache for module %s.', resolvedModulePath);
-        delete require.cache[require.resolve(resolvedModulePath)];
-    });
-    //and finally return the loaded module
-    return resultModule;
-};
-
 
 if (typeof exports !== 'undefined') {
     module.exports.ConfigurationBase = ConfigurationBase;
     module.exports.ConfigurationStrategy = ConfigurationStrategy;
     module.exports.ModuleLoaderStrategy = ModuleLoaderStrategy;
     module.exports.DefaultModuleLoaderStrategy = DefaultModuleLoaderStrategy;
-    module.exports.ActiveModuleLoaderStrategy = ActiveModuleLoaderStrategy;
 }
 
 

@@ -28,12 +28,12 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 /**
  *
  */
 var _ = require('lodash');
 var winston = require('winston');
+var isNode = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
 
 var UUID_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 var HEX_CHARS = 'abcdef1234567890';
@@ -48,6 +48,7 @@ var UndefinedRegex = /^undefined$/ig;
 var IntegerRegex =/^[-+]?\d+$/g;
 var FloatRegex =/^[+-]?\d+(\.\d+)?$/g;
 
+// noinspection JSUnusedGlobalSymbols
 var logger = new winston.Logger({
     level: (process.env.NODE_ENV === 'development') ? 'debug' : 'info',
     transports: [
@@ -100,6 +101,15 @@ LangUtils.inherits = function(ctor, superCtor) {
     if (typeof superCtor !== "function" && superCtor !== null) {
         throw new TypeError("Super expression must either be null or a function, not " + typeof superCtor);
     }
+
+    //if process is running under node js
+    if (isNode) {
+        var utilModule = "util";
+        var util = require(utilModule);
+        //call util.inherits() function
+        return util.inherits(ctor, superCtor);
+    }
+
     ctor.prototype = Object.create(superCtor && superCtor.prototype, {
         constructor: {
             value: ctor,
@@ -668,6 +678,7 @@ function TraceUtils() {
      * @static
      * @param {...*} data
      */
+// eslint-disable-next-line no-unused-vars
     TraceUtils.info = function(data) {
         var args = Array.prototype.slice.call(arguments);
         if (args.length===0) { return; }
@@ -679,6 +690,7 @@ function TraceUtils() {
      * @static
      * @param {*} data
      */
+// eslint-disable-next-line no-unused-vars
     TraceUtils.warn= function(data) {
         var args = Array.prototype.slice.call(arguments);
         if (args.length===0) { return; }
@@ -690,6 +702,7 @@ function TraceUtils() {
      * @static
      * @param {...*} data
      */
+    // eslint-disable-next-line no-unused-vars
     TraceUtils.debug = function(data) {
         var args = Array.prototype.slice.call(arguments);
         if (args.length===0) { return; }
@@ -761,7 +774,7 @@ function NumberUtils() {
         if (!/[a-z]{8}/.test(s)) {
             throw new Error('Invalid base-26 format.');
         }
-        const a = 'a'.charCodeAt(0);
+        var a = 'a'.charCodeAt(0);
         for (var i = 7; i >=0; i--) {
             num = (num * 26) + (s[i].charCodeAt(0) - a);
         }
@@ -785,7 +798,7 @@ function NumberUtils() {
         }
         var out = "";
         var length= 1;
-        const a = 'a'.charCodeAt(0);
+        var a = 'a'.charCodeAt(0);
         while(length<=8)
         {
             out += String.fromCharCode(a + (num % 26));
@@ -808,6 +821,7 @@ function PathUtils() {
  * @param {...string} part
  * @returns {string}
  */
+// eslint-disable-next-line no-unused-vars
 PathUtils.join = function (part) {
     // Split the inputs into a list of path commands.
     var parts = [], i, l;

@@ -28,7 +28,6 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 var LangUtils = require("./utils").LangUtils;
 var _ = require('lodash');
 var errors = require('./resources/http-error-codes.json');
@@ -106,7 +105,7 @@ LangUtils.inherits(FileNotFoundError, CodedError);
 function HttpError(status, message, innerMessage) {
     HttpError.super_.bind(this)(message, "EHTTP");
     var hstatus = _.isNumber(status) ? status : 500;
-    const err = _.find(errors, function(x) {
+    var err = _.find(errors, function(x) {
         return x.status === hstatus;
     });
     if (err) {
@@ -216,7 +215,7 @@ LangUtils.inherits(HttpServerError, HttpError);
  * @property {string} code - A string that represents an error code e.g. EDATA
  * @property {string} message -  The error message.
  * @property {string} innerMessage - The error inner message.
- * @property {number} status - A number that represents an error status. This error status may be used for throwing the approriate HTTP error.
+ * @property {number} status - A number that represents an error status. This error status may be used for throwing the appropriate HTTP error.
  * @property {*} additionalData - Additional data associated with this error
  * @augments CodedError
  */

@@ -28,19 +28,15 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 var _ = require('lodash');
-
-/**
- * @private
- */
-var HTML_START_CHAR='<',
-    HTML_END_CHAR='>',
-    HTML_FULL_END_STRING = ' />',
-    HTML_SPACE_CHAR = ' ',
-    HTML_ATTR_STRING = '%0="%1"',
-    HTML_START_TAG_STRING = '<%0',
-    HTML_END_TAG_STRING = '</%0>';
+// eslint-disable-next-line no-unused-vars
+var HTML_START_CHAR = '<';
+var HTML_END_CHAR = '>';
+var HTML_FULL_END_STRING = ' />';
+var HTML_SPACE_CHAR = ' ';
+var HTML_ATTR_STRING = '%0="%1"';
+var HTML_START_TAG_STRING = '<%0';
+var HTML_END_TAG_STRING = '</%0>';
 /**
  * @classdesc HtmlWriter class represents a helper class for rendering HTML content.
  * @class
@@ -68,6 +64,7 @@ function HtmlWriter() {
      */
     this.indent = true;
 }
+// noinspection JSUnusedGlobalSymbols
 /**
  * Writes an attribute to an array of attributes that is going to be used in writeBeginTag function
  * @param {String} name - The name of the HTML attribute
@@ -79,6 +76,7 @@ HtmlWriter.prototype.writeAttribute = function(name, value)
     this.bufferedAttributes.push({name:name, value:value});
     return this;
 };
+// noinspection JSUnusedGlobalSymbols
 /**
  * Writes an array of attributes to the output buffer. This attributes are going to be rendered after writeBeginTag or WriteFullBeginTag function call.
  * @param {Array|Object} obj - An array of attributes or an object that represents an array of attributes
@@ -105,6 +103,7 @@ HtmlWriter.prototype.writeAttributes = function(obj)
     }
     return this;
 };
+// noinspection JSUnusedGlobalSymbols
 /**
  * @param {String} tag
  * @returns {HtmlWriter}
@@ -132,6 +131,7 @@ HtmlWriter.prototype.writeBeginTag = function(tag) {
     this.buffer += HTML_END_CHAR;
     return this;
 };
+// noinspection JSUnusedGlobalSymbols
 /**
  * Writes a full begin HTML tag (e.g <div/>).
  * @param {String} tag
@@ -159,6 +159,7 @@ HtmlWriter.prototype.writeFullBeginTag = function(tag) {
     this.buffer += HTML_FULL_END_STRING;
     return this;
 };
+// noinspection JSUnusedGlobalSymbols
 /**
  * Writes an end HTML tag (e.g </div>) based on the current buffered tags.
  * @returns {HtmlWriter}
@@ -177,6 +178,7 @@ HtmlWriter.prototype.writeEndTag = function()
     this.bufferedTags.splice(tagsLength-1,1);
     return this;
 };
+// noinspection JSUnusedGlobalSymbols
 /**
  *
  * @param {String} s
@@ -208,7 +210,7 @@ HtmlWriter.prototype.write = function(s) {
 HtmlWriter.prototype.toString = function() {
     return this.buffer;
 };
-
+// noinspection JSUnusedGlobalSymbols
 /**
  * @param {function} fn
  */
