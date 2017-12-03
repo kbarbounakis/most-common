@@ -1,0 +1,8 @@
+{
+    "settings": {
+        "setting1":"Test",
+        "settingGroup2": {
+            "setting2": true
+        }
+    }
+}

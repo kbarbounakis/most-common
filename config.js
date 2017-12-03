@@ -108,9 +108,12 @@ function ConfigurationBase(configPath) {
     //initialize settings object
     this[configProperty]['settings'] = this[configProperty]['settings'] || { };
 
-    Object.defineProperty(this, 'settings',{ get: function() {
-        return this[configProperty]['settings'];
-    }, enumerable:true, configurable:false, writable:false});
+    Object.defineProperty(this, 'settings',{
+        get: function() {
+            return this[configProperty]['settings'];
+    },
+        enumerable:true,
+        configurable:false});
 
 }
 //noinspection JSUnusedGlobalSymbols
@@ -147,7 +150,7 @@ ConfigurationBase.prototype.hasSourceAt = function(p) {
  * @returns {Object}
  */
 ConfigurationBase.prototype.setSourceAt = function(p, value) {
-    return _.set(this[configProperty], p, value);
+    return _.set(this[configProperty], p.replace(/\//,'.'), value);
 };
 //noinspection JSUnusedGlobalSymbols
 /**

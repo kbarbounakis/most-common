@@ -34,6 +34,7 @@
 var _ = require('lodash');
 var winston = require('winston');
 var isNode = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+var sprintf = require("sprintf").sprintf;
 
 var UUID_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 var HEX_CHARS = 'abcdef1234567890';
@@ -554,11 +555,12 @@ function TextUtils() {
      */
     TextUtils.toSHA1 = function(value) {
 
+        var cryptoModule = 'crypto';
         if (typeof window !== 'undefined') {
             throw new Error('This method is not implemented for this environment')
         }
 
-        var crypto = require('crypto');
+        var crypto = require(cryptoModule);
         if (typeof value === 'undefined' || value === null) {
             return;
         }
@@ -583,11 +585,12 @@ function TextUtils() {
      */
     TextUtils.toSHA256 = function(value) {
 
+        var cryptoModule = 'crypto';
         if (typeof window !== 'undefined') {
             throw new Error('This method is not implemented for this environment')
         }
 
-        var crypto = require('crypto');
+        var crypto = require(cryptoModule);
         if (typeof value === 'undefined' || value === null) {
             return;
         }
@@ -630,47 +633,36 @@ function TextUtils() {
         return uuid.join('');
     };
 
-
 /**
  * @class
  * @constructor
  */
 function TraceUtils() {
-        
+
     }
 
-    /**
-     * @static
-     * @param {...*} data
-     */
-    TraceUtils.log = function(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (args.length===0) { return; }
-        if (data instanceof Error) {
-            return TraceUtils.error.apply(this, args);
-        }
-        if (_.isObject(data)) {
-            return logger.info.call(logger, JSON.stringify(data,null, 2));
-        }
-        return logger.info.apply(logger, args);
+    TraceUtils.logger = new TraceLogger();
+
+    TraceUtils.useLogger = function(logger) {
+        TraceUtils.logger = logger;
     };
 
     /**
      * @static
      * @param {...*} data
      */
+// eslint-disable-next-line no-unused-vars
+    TraceUtils.log = function(data) {
+        TraceUtils.logger.log.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
+    };
+
+    /**
+     * @static
+     * @param {...*} data
+     */
+// eslint-disable-next-line no-unused-vars
     TraceUtils.error = function(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (args.length===0) { return; }
-        if (data instanceof Error) {
-            if (data.stack) {
-                return logger.error(data.stack);
-            }
-            else {
-                return logger.error.apply(logger, args);
-            }
-        }
-        return logger.error.apply(logger, args);
+        TraceUtils.logger.error.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
     };
 
     /**
@@ -680,9 +672,7 @@ function TraceUtils() {
      */
 // eslint-disable-next-line no-unused-vars
     TraceUtils.info = function(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (args.length===0) { return; }
-        return logger.info.apply(logger, args);
+        TraceUtils.logger.info.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
     };
 
     /**
@@ -692,9 +682,17 @@ function TraceUtils() {
      */
 // eslint-disable-next-line no-unused-vars
     TraceUtils.warn= function(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (args.length===0) { return; }
-        return logger.warn.apply(logger, args);
+        TraceUtils.logger.warn.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
+    };
+
+    /**
+     *
+     * @static
+     * @param {*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    TraceUtils.verbose = function(data) {
+        TraceUtils.logger.verbose.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
     };
 
     /**
@@ -704,9 +702,7 @@ function TraceUtils() {
      */
     // eslint-disable-next-line no-unused-vars
     TraceUtils.debug = function(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (args.length===0) { return; }
-        return logger.debug.apply(logger, args);
+        TraceUtils.logger.debug.apply(TraceUtils.logger, Array.prototype.slice.call(arguments));
     };
 
 /**
@@ -844,6 +840,135 @@ PathUtils.join = function (part) {
     if (parts[0] === "") newParts.unshift("");
 // Turn back into a single string path.
     return newParts.join("/") || (newParts.length ? "/" : ".");
+};
+
+var Reset = "\x1b[0m";
+var FgBlack = "\x1b[30m";
+var FgRed = "\x1b[31m";
+var FgGreen = "\x1b[32m";
+// eslint-disable-next-line no-unused-vars
+var FgYellow = "\x1b[33m";
+var FgBlue = "\x1b[34m";
+var FgMagenta = "\x1b[35m";
+// eslint-disable-next-line no-unused-vars
+var FgCyan = "\x1b[36m";
+// eslint-disable-next-line no-unused-vars
+var FgWhite = "\x1b[37m";
+
+var Bold = "\x1b[1m";
+
+var LogLevels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    verbose: 3,
+    debug: 4
+};
+
+var LogLevelColors = {
+    error: FgRed,
+    warn: FgMagenta,
+    info: FgBlack,
+    verbose: FgBlue,
+    debug: Bold + FgGreen
+};
+
+function timestamp() {
+    return (new Date()).toUTCString();
+}
+
+/**
+ * @class
+ * @param {ITraceLoggerOptions} options
+ * @constructor
+ * @augments ITraceLogger
+ */
+function TraceLogger(options) {
+    this.options = {
+        colors:true,
+        level:"info"
+    };
+    if (typeof options === "undefined" && options !== null && isNode()) {
+        if (isNode() && process.env.NODE_ENV === "development") {
+            this.options.level = "debug";
+        }
+    }
+    if (typeof options !== "undefined" && options !== null ) {
+        this.options = options;
+        //validate logging level
+        Args.check(LogLevels.hasOwnProperty(this.options.level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+    }
+}
+
+/**
+ * @param {string} level
+ * @returns {ITraceLogger}
+ */
+TraceLogger.prototype.level = function(level) {
+    Args.check(LogLevels.hasOwnProperty(level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+    this.options.level = level;
+    return this;
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.log = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("info", sprintf.apply(null, args));
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.info = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("info", sprintf.apply(null, args));
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.error = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("error", sprintf.apply(null, args));
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.warn = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("warn", sprintf.apply(null, args));
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.verbose = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("verbose", sprintf.apply(null, args));
+};
+/**
+ * @param {...*} data
+ */
+// eslint-disable-next-line no-unused-vars
+TraceLogger.prototype.debug = function(data) {
+    var args = Array.prototype.slice.call(arguments);
+    this.write("debug", sprintf.apply(null, args));
+};
+
+TraceLogger.prototype.write = function(level, text) {
+    if (LogLevels[level]>LogLevels[this.options.level]) {
+        return;
+    }
+    if (this.options.colors) {
+// eslint-disable-next-line no-console
+        console.log(LogLevelColors[level] + timestamp() + " [" + level.toUpperCase() + "] " + text, Reset);
+    } else {
+// eslint-disable-next-line no-console
+        console.log(timestamp() + " [" + level.toUpperCase() + "] " + text);
+    }
 };
 
 

@@ -1,6 +1,5 @@
 var SequentialEventEmitter = require('./../emitter').SequentialEventEmitter;
 var LangUtils = require('./../utils').LangUtils;
-require('events').EventEmitter;
 describe('test sequential event emitter', function() {
 
     function MyEmitter() {
@@ -19,7 +18,6 @@ describe('test sequential event emitter', function() {
             },2000);
 
         });
-
 
         emitter.once('event', function(args, cb) {
 // eslint-disable-next-line no-console
